@@ -1,6 +1,11 @@
-import logging, os, requests, sys, telegram, time
-from pickle import TRUE
-from msilib.schema import Error
+import logging
+import os
+import requests
+import sys
+import telegram
+import time
+
+
 from dotenv import load_dotenv
 
 
@@ -35,10 +40,11 @@ logger.addHandler(handler)
 
 
 def send_message(bot, message):
+    """Отправка сообщения."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info('Сообщение успешно отправлено')
-    except:
+    except Exception:
         message = 'Произошел сбой при отправке сообщения'
         logger.error(message)
         bot.send_message(TELEGRAM_CHAT_ID, message)
@@ -46,7 +52,7 @@ def send_message(bot, message):
 
 def get_api_answer(current_timestamp):
     """Получает временную метку.
-    Делает запрос к единственному эндпоинту API-сервиса 
+    Делает запрос к единственному эндпоинту API-сервиса
     и возвращает ответ API.
     """
     timestamp = current_timestamp or int(time.time())
@@ -58,7 +64,7 @@ def get_api_answer(current_timestamp):
         message = 'Эндпоинт недоступен'
         logger.error(message)
         raise ValueError(message)
-    except:
+    except Exception:
         message = 'Наблюдаются сбои при запросе к эндпоинту'
         logger.error(message)
         raise ValueError(message)
@@ -74,7 +80,7 @@ def check_response(response):
             return homeworks_list
         raise ValueError('Домашние задания представлены не в виде списка')
     return False
-    
+
 
 def parse_status(homework):
     """Получает один элемент из списка домашних работ.
@@ -83,10 +89,11 @@ def parse_status(homework):
     homework_name = homework['homework_name']
     homework_status = homework['status']
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    if all((homework_name, homework_status)) == True:
+    if all((homework_name, homework_status)) is True:
         if homework_status in HOMEWORK_STATUSES:
             verdict = HOMEWORK_STATUSES[homework_status]
-            message = f'Изменился статус проверки работы "{homework_name}". {verdict}'
+            message = (f'Изменился статус проверки работы "{homework_name}". '
+                       f'{verdict}')
             return message
         message = f'Статус {homework_status} недокументирован'
         logger.error(message)
@@ -101,7 +108,7 @@ def parse_status(homework):
 def check_tokens():
     """Проверяет доступность переменных окружения."""
     all_tokens = all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID))
-    if all_tokens == True:
+    if all_tokens is True:
         return True
     else:
         logger.critical('Переменные окружения отсутствуют')
@@ -117,7 +124,7 @@ def main():
         try:
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
-            if homework != False:
+            if homework is not False:
                 message = parse_status(homework)
             else:
                 message = 'В списке отсутствует ключ "homeworks"'

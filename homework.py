@@ -28,18 +28,12 @@ HOMEWORK_VERDICTS = {
 }
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(handler)
-
-
 def send_message(bot, message):
     """Отправка сообщения."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info('Сообщение успешно отправлено')
-    except Exception:
+    except telegram.TelegramError:
         message = 'Произошел сбой при отправке сообщения'
         logger.error(message)
         bot.send_message(TELEGRAM_CHAT_ID, message)
@@ -87,7 +81,6 @@ def parse_status(homework):
     """
     homework_name = homework['homework_name']
     homework_status = homework['status']
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
     try:
         all((homework_name, homework_status))
         if homework_status in HOMEWORK_VERDICTS:
@@ -97,12 +90,10 @@ def parse_status(homework):
             return message
         message = f'Статус {homework_status} недокументирован'
         logger.error(message)
-        bot.send_message(TELEGRAM_CHAT_ID, message)
         raise ValueError(message)
     except Exception:
         message = 'Ключи "homework_name" и "status" в списке отсутствуют'
         logger.error(message)
-        bot.send_message(TELEGRAM_CHAT_ID, message)
         raise ValueError(message)
 
 
@@ -148,4 +139,8 @@ if __name__ == '__main__':
         filename='main.log',
         format='%(asctime)s [%(levelname)s] %(message)s'
     )
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(sys.stdout)
+    logger.addHandler(handler)
     main()

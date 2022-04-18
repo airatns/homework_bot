@@ -68,7 +68,7 @@ def check_response(response):
         message = 'Домашние задания представлены не в виде списка'
         logger.error(message)
         raise ValueError(message)
-    if 'homeworks' not in response:
+    elif 'homeworks' not in response:
         message = 'В списке отсутствует ключ "homeworks"'
         logger.error(message)
         raise ValueError(message)

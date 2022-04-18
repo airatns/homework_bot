@@ -111,8 +111,7 @@ def check_tokens() -> bool:
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
-    initial_message = ''
+    current_timestamp = 1
     if check_tokens() is False:
         message = 'Переменные окружения отсутствуют'
         logger.critical(message)
@@ -121,9 +120,8 @@ def main():
         try:
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
-            if homework and homework != initial_message:
-                initial_message = homework
-                message = parse_status(homework[1])
+            if homework and len(homework):
+                message = parse_status(homework[0])
                 send_message(bot, message)
             else:
                 logger.debug('Новые статусы отсутствуют')

@@ -64,14 +64,6 @@ def check_response(response):
     Возвращает список домашних работ из ответа API.
     """
     homeworks_list = response['homeworks']
-    if not isinstance(response, dict):
-        message = 'Ответ API представлен не в виде словаря'
-        logger.error(message)
-        raise ValueError(message)
-    if not bool(response):
-        message = 'Ответ API пришел в виде пустого словаря'
-        logger.error(message)
-        raise ValueError(message)
     if not isinstance(homeworks_list, list):
         message = 'Домашние задания представлены не в виде списка'
         logger.error(message)
@@ -111,7 +103,7 @@ def check_tokens() -> bool:
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = 1
+    current_timestamp = int(time.time())
     if check_tokens() is False:
         message = 'Переменные окружения отсутствуют'
         logger.critical(message)
@@ -119,10 +111,11 @@ def main():
     while True:
         try:
             response = get_api_answer(current_timestamp)
-            homework = check_response(response)
-            if homework and len(homework):
-                message = parse_status(homework[0])
-                send_message(bot, message)
+            homeworks = check_response(response)
+            if homeworks and len(homeworks):
+                for homework in homeworks:
+                    message = parse_status(homework)
+                    send_message(bot, message)
             else:
                 logger.debug('Новые статусы отсутствуют')
             current_timestamp = response['current_date']

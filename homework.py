@@ -81,10 +81,6 @@ def parse_status(homework):
     """
     homework_name = homework['homework_name']
     homework_status = homework['status']
-    if all((homework_name, homework_status)) is False:
-        message = 'Ключи "homework_name" и "status" в списке отсутствуют'
-        logger.error(message)
-        raise ValueError
     if homework_status not in HOMEWORK_VERDICTS:
         message = f'Статус {homework_status} недокументирован'
         logger.error(message)

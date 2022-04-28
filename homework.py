@@ -34,9 +34,7 @@ def send_message(bot, message):
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info('Сообщение успешно отправлено')
     except telegram.TelegramError:
-        message = 'Произошел сбой при отправке сообщения'
-        logger.error(message)
-        bot.send_message(TELEGRAM_CHAT_ID, message)
+        logger.error('Произошел сбой при отправке сообщения')
 
 
 def get_api_answer(current_timestamp):
@@ -46,29 +44,24 @@ def get_api_answer(current_timestamp):
     """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    try:
-        response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
-        if response.status_code == 200:
-            return response.json()
-        message = 'Эндпоинт недоступен'
+    response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
+    if response.status_code != 200:
+        message = "Эндпоинт недоступен"
         logger.error(message)
         raise ValueError(message)
-    except telegram.TelegramError:
-        message = 'Наблюдаются сбои при запросе к эндпоинту'
-        logger.error(message)
-        raise KeyError
+    return response.json()
 
 
 def check_response(response):
     """Получает ответ API.
     Возвращает список домашних работ из ответа API.
     """
-    homeworks_list = response['homeworks']
+    homeworks_list = response["homeworks"]
     if not isinstance(homeworks_list, list):
-        message = 'Домашние задания представлены не в виде списка'
+        message = "Домашние задания представлены не в виде списка"
         logger.error(message)
         raise ValueError(message)
-    elif 'homeworks' not in response:
+    elif "homeworks" not in response:
         message = 'В списке отсутствует ключ "homeworks"'
         logger.error(message)
         raise ValueError(message)
@@ -79,15 +72,14 @@ def parse_status(homework):
     """Получает один элемент из списка домашних работ.
     Возвращает статус этой работы.
     """
-    homework_name = homework['homework_name']
-    homework_status = homework['status']
+    homework_name = homework["homework_name"]
+    homework_status = homework["status"]
     if homework_status not in HOMEWORK_VERDICTS:
-        message = f'Статус {homework_status} недокументирован'
+        message = f"Статус {homework_status} недокументирован"
         logger.error(message)
         raise ValueError
     verdict = HOMEWORK_VERDICTS[homework_status]
-    message = (f'Изменился статус проверки работы "{homework_name}". '
-               f'{verdict}')
+    message = f'Изменился статус проверки работы "{homework_name}". 'f"{verdict}"
     return message
 
 
@@ -119,7 +111,7 @@ def main():
             message = f'Сбой в работе программы: {error}'
             logger.critical(message)
             send_message(bot, message)
-        else:
+        finally:
             time.sleep(RETRY_TIME)
 
 

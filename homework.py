@@ -34,7 +34,9 @@ def send_message(bot, message):
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info('Сообщение успешно отправлено')
     except telegram.TelegramError:
-        logger.error('Произошел сбой при отправке сообщения')
+        message = 'Произошел сбой при отправке сообщения'
+        logger.error(message)
+        bot.send_message(TELEGRAM_CHAT_ID, message)
 
 
 def get_api_answer(current_timestamp):
@@ -45,26 +47,31 @@ def get_api_answer(current_timestamp):
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
-    if response.status_code != 200:
-        message = "Эндпоинт недоступен"
+    try:
+        response
+        if response.status_code == 200:
+            return response.json()
+        message = 'Эндпоинт недоступен'
         logger.error(message)
         raise ValueError(message)
-    return response.json()
+    except telegram.TelegramError:
+        message = 'Наблюдаются сбои при запросе к эндпоинту'
+        logger.error(message)
 
 
 def check_response(response):
     """Получает ответ API.
     Возвращает список домашних работ из ответа API.
     """
-    homeworks_list = response["homeworks"]
+    homeworks_list = response['homeworks']
+    if not isinstance(response, dict):
+        raise ValueError('Ответ API представлен не в виде словаря')
+    if not bool(response):
+        raise ValueError('Ответ API пришел в виде пустого словаря')
     if not isinstance(homeworks_list, list):
-        message = "Домашние задания представлены не в виде списка"
-        logger.error(message)
-        raise ValueError(message)
-    elif "homeworks" not in response:
-        message = 'В списке отсутствует ключ "homeworks"'
-        logger.error(message)
-        raise ValueError(message)
+        raise ValueError('Домашние задания представлены не в виде списка')
+    if 'homeworks' not in response:
+        return False
     return homeworks_list
 
 
@@ -72,15 +79,22 @@ def parse_status(homework):
     """Получает один элемент из списка домашних работ.
     Возвращает статус этой работы.
     """
-    homework_name = homework["homework_name"]
-    homework_status = homework["status"]
-    if homework_status not in HOMEWORK_VERDICTS:
-        message = f"Статус {homework_status} недокументирован"
+    homework_name = homework['homework_name']
+    homework_status = homework['status']
+    try:
+        all((homework_name, homework_status))
+        if homework_status in HOMEWORK_VERDICTS:
+            verdict = HOMEWORK_VERDICTS[homework_status]
+            message = (f'Изменился статус проверки работы "{homework_name}". '
+                       f'{verdict}')
+            return message
+        message = f'Статус {homework_status} недокументирован'
         logger.error(message)
-        raise ValueError
-    verdict = HOMEWORK_VERDICTS[homework_status]
-    message = f'Изменился статус проверки работы "{homework_name}". 'f"{verdict}"
-    return message
+        raise ValueError(message)
+    except Exception:
+        message = 'Ключи "homework_name" и "status" в списке отсутствуют'
+        logger.error(message)
+        raise ValueError(message)
 
 
 def check_tokens() -> bool:
@@ -92,27 +106,32 @@ def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    initial_message = ''
     if check_tokens() is False:
-        message = 'Переменные окружения отсутствуют'
-        logger.critical(message)
-        raise ValueError(message)
+        logger.critical('Переменные окружения отсутствуют')
     while True:
         try:
             response = get_api_answer(current_timestamp)
-            homeworks = check_response(response)
-            if homeworks and len(homeworks):
-                for homework in homeworks:
-                    message = parse_status(homework)
-                    send_message(bot, message)
+            homework = check_response(response)
+            if homework is not False:
+                current_homework = homework[0]
+                message = parse_status(current_homework)
             else:
-                logger.debug('Новые статусы отсутствуют')
-            current_timestamp = response['current_date']
+                message = 'В списке отсутствует ключ "homeworks"'
+                logger.error(message)
+            if message == initial_message:
+                pass
+            else:
+                initial_message = message
+                bot.send_message(TELEGRAM_CHAT_ID, initial_message)
+            current_timestamp = int(time.time())
+            time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            logger.critical(message)
-            send_message(bot, message)
-        finally:
+            bot.send_message(TELEGRAM_CHAT_ID, message)
             time.sleep(RETRY_TIME)
+        else:
+            pass
 
 
 if __name__ == '__main__':

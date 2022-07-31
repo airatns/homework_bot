@@ -36,14 +36,12 @@ Cоздать и активировать виртуальное окружен�
 
 Прописать параметры окружения в файле .env:
 
->* PRACTICUM_TOKEN
+* PRACTICUM_TOKEN
 
->* TELEGRAM_TOKEN
+* TELEGRAM_TOKEN
 
->* TELEGRAM_CHAT_ID
+* TELEGRAM_CHAT_ID
 
 Запустить проект:
 
 >*python3 manage.py runserver*
-
-

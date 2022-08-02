@@ -8,7 +8,7 @@ Telegram-бот, который обращается к API сервиса Пр�
 
 * работа принята
 
-<img width="414" alt="Telegram example" src="https://user-images.githubusercontent.com/96816183/182360611-1212d42b-9d23-45dd-8486-846ae8ef2069.png">
+<img width="414" alt="Telegram example" src="https://user-images.githubusercontent.com/96816183/182360925-82e9fb48-7268-41e4-9eac-a0d3979bbd67.png">
 
 ## **Стек технологий**
 

@@ -4,38 +4,38 @@
 <img src="https://github.com/devicons/devicon/blob/master/icons/django/django-plain-wordmark.svg" title="HTML5" alt="HTML" width="40" height="40"/>&nbsp;
 <img src="https://github.com/devicons/devicon/blob/master/icons/vscode/vscode-original-wordmark.svg" title="HTML5" alt="HTML" width="40" height="40"/>&nbsp;
 
-Telegram-бот, который обращается к API сервиса Практикум.Домашка и оповещает студента Практикума одним из статусов:
+Homework Bot in Telegram, which connects to the external API of the Yandex Service and notifies the student with one of the statuses:
 
-* Работа взята на проверку ревьюером.
+* the homework has been sent for review.
 
-* Работа проверена: у ревьюера есть замечания.
+* the homework has been returned for correction.
 
-* Работа проверена: ревьюеру всё понравилось. Ура!
+* the homework has been accepted!
 
 <img width="414" alt="homework" src="https://user-images.githubusercontent.com/96816183/182928201-5f94a1b3-4ee1-4172-a203-7fe64e202beb.png">
 
-## **Как запустить проект:**
+## **Getting Started:**
 
-Клонировать репозиторий и перейти в него в командной строке:
+Clone the repository:
 
 >*git clone git@github.com:airatns/homework_bot.git*
 
-Cоздать и активировать виртуальное окружение:
+Set up the virtual environment:
 
 >*python -m venv env* \
 >*source env/scripts/activate*
 
-Установить зависимости из файла requirements.txt:
+Install dependencies in the app using requirements.txt:
 
 >*python -m pip install --upgrade pip* \
 >*pip install -r requirements.txt*
 
-Прописать параметры окружения в файле .env:
+Create an .env file and fill it with the next data:
 
 > PRACTICUM_TOKEN \
 > TELEGRAM_TOKEN \
 > TELEGRAM_CHAT_ID
 
-Запустить проект:
+Run the app locally:
 
 >*python homework.py*
